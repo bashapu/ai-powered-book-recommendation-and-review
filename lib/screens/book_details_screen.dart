@@ -61,6 +61,47 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
     }
   }
 
+  void _confirmRemoveFromLibrary() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Remove Book'),
+            content: const Text(
+              'Are you sure you want to remove this book from your library?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Remove'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('library')
+          .doc(widget.book['id'])
+          .delete();
+
+      if (mounted) {
+        setState(() {
+          _alreadyAdded = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Book removed from your library.')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = widget.book['title'] ?? 'Unknown Title';
@@ -89,15 +130,15 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
 
             _alreadyAdded
                 ? ElevatedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.check),
-                    label: const Text('Already in My Library'),
-                  )
+                  onPressed: _confirmRemoveFromLibrary,
+                  icon: const Icon(Icons.check),
+                  label: const Text('Already in My Library (Tap to Remove)'),
+                )
                 : ElevatedButton.icon(
-                    onPressed: _addToLibrary,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add to My Library'),
-                  ),
+                  onPressed: _addToLibrary,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add to My Library'),
+                ),
 
             const SizedBox(height: 12),
             ElevatedButton(
