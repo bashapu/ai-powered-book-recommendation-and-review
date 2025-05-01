@@ -1,4 +1,6 @@
 import 'package:book_app/models/book_model.dart';
+import 'package:book_app/screens/review_details_screen.dart';
+import 'package:book_app/screens/write_review_screen.dart';
 import 'package:book_app/services/library_service.dart';
 import 'package:flutter/material.dart';
 
@@ -26,19 +28,28 @@ class BookDetailsScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                final bookModel = BookModel(
-                  id: book['id'],
-                  title: book['title'],
-                  authors: book['authors'],
-                  thumbnail: book['thumbnail'],
-                  description: book['description'],
-                  status: 'want_to_read', // default
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => WriteReviewScreen(bookId: book['id']),
+                  ),
                 );
-                LibraryService().addBook(bookModel);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Book added to your library!')));
               },
-              child: const Text('Add to My Library'),
+              child: const Text('Write a Review'),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ReviewDetailsScreen(bookId: book['id']),
+                  ),
+                );
+              },
+              child: const Text('See Reviews'),
+            ),
+
           ],
         ),
       ),
