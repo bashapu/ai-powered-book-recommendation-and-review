@@ -14,9 +14,25 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   ];
   final Set<String> _selectedGenres = {};
 
+  @override
+  void initState() {
+    super.initState();
+    _loadGenres();
+  }
+
+  void _loadGenres() async {
+    final user = await UserService().getUser();
+    setState(() {
+      _selectedGenres.addAll(user?.preferredGenres ?? []);
+    });
+  }
+
   void _savePreferences() async {
     await UserService().updateGenres(_selectedGenres.toList());
     Navigator.pop(context);
+    setState(() {
+      
+    });
   }
 
   @override

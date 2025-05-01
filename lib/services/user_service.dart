@@ -23,7 +23,9 @@ class UserService {
   Future<void> updateGenres(List<String> genres) async {
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
-      await _firestore.collection('users').doc(uid).update({'preferredGenres': genres});
+      await _firestore.collection('users').doc(uid).update({
+        'preferredGenres': genres,
+      });
     }
   }
 }
