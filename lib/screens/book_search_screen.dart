@@ -25,17 +25,29 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
 
   Widget _buildBookCard(Map<String, dynamic> book) {
     return ListTile(
-      leading: book['thumbnail'] != null
-          ? Image.network(book['thumbnail'], width: 50, fit: BoxFit.cover)
-          : const Icon(Icons.book),
+      leading:
+          book['thumbnail'] != null
+              ? Image.network(book['thumbnail'], width: 50, fit: BoxFit.cover)
+              : const Icon(Icons.book),
       title: Text(book['title']),
       subtitle: Text(book['authors']),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BookDetailsScreen(book: book),
-        ),
-      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => BookDetailsScreen(
+                  book: {
+                    'id': book['id'],
+                    'title': book['title'],
+                    'authors': book['authors'],
+                    'description': book['description'] ?? '',
+                    'thumbnail': book['thumbnail'],
+                  },
+                ),
+          ),
+        );
+      },
     );
   }
 

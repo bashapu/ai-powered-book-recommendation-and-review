@@ -1,8 +1,8 @@
-import 'package:book_app/models/book_model.dart';
 import 'package:book_app/screens/review_details_screen.dart';
 import 'package:book_app/screens/write_review_screen.dart';
-import 'package:book_app/services/library_service.dart';
 import 'package:flutter/material.dart';
+import '../models/book_model.dart';
+import '../services/library_service.dart';
 
 class BookDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> book;
@@ -11,21 +11,48 @@ class BookDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String title = book['title'] ?? 'Unknown Title';
+    final String authors = book['authors'] ?? 'Unknown Author';
+    final String? thumbnail = book['thumbnail'];
+    final String? description = book['description'];
+
     return Scaffold(
-      appBar: AppBar(title: Text(book['title'])),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
+      appBar: AppBar(title: Text(title)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (book['thumbnail'] != null)
-              Image.network(book['thumbnail'], height: 200),
-            const SizedBox(height: 16),
-            Text(book['title'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Author(s): ${book['authors']}'),
-            const SizedBox(height: 16),
-            Text(book['description'] ?? 'No description available.'),
+            if (thumbnail != null)
+              Center(
+                child: Image.network(thumbnail, height: 200),
+              ),
             const SizedBox(height: 20),
+            Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text("Author(s): $authors"),
+            const SizedBox(height: 16),
+            Text(description ?? 'No description available.'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                LibraryService().addBook(
+                  BookModel(
+                    id: book['id'],
+                    title: title,
+                    authors: authors,
+                    thumbnail: thumbnail,
+                    description: description,
+                    status: 'want_to_read',
+                  ),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Book added to your library!')),
+                );
+              },
+              child: const Text('Add to My Library'),
+            ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -49,7 +76,6 @@ class BookDetailsScreen extends StatelessWidget {
               },
               child: const Text('See Reviews'),
             ),
-
           ],
         ),
       ),
