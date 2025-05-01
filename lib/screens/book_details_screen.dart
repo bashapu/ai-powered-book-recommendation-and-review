@@ -1,20 +1,72 @@
 import 'package:book_app/screens/review_details_screen.dart';
 import 'package:book_app/screens/write_review_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/book_model.dart';
 import '../services/library_service.dart';
 
-class BookDetailsScreen extends StatelessWidget {
+class BookDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> book;
 
   const BookDetailsScreen({super.key, required this.book});
 
   @override
+  State<BookDetailsScreen> createState() => _BookDetailsScreenState();
+}
+
+class _BookDetailsScreenState extends State<BookDetailsScreen> {
+  bool _alreadyAdded = false;
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfBookAlreadyInLibrary();
+  }
+
+  Future<void> _checkIfBookAlreadyInLibrary() async {
+    if (userId == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('library')
+        .doc(widget.book['id'])
+        .get();
+
+    setState(() {
+      _alreadyAdded = doc.exists;
+    });
+  }
+
+  void _addToLibrary() async {
+    final bookModel = BookModel(
+      id: widget.book['id'],
+      title: widget.book['title'],
+      authors: widget.book['authors'],
+      thumbnail: widget.book['thumbnail'],
+      description: widget.book['description'],
+      status: 'want_to_read',
+    );
+
+    await LibraryService().addBook(bookModel);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book added to your library!')),
+      );
+      setState(() {
+        _alreadyAdded = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String title = book['title'] ?? 'Unknown Title';
-    final String authors = book['authors'] ?? 'Unknown Author';
-    final String? thumbnail = book['thumbnail'];
-    final String? description = book['description'];
+    final title = widget.book['title'] ?? 'Unknown Title';
+    final authors = widget.book['authors'] ?? 'Unknown Author';
+    final thumbnail = widget.book['thumbnail'];
+    final description = widget.book['description'] ?? 'No description available.';
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
@@ -32,33 +84,28 @@ class BookDetailsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text("Author(s): $authors"),
             const SizedBox(height: 16),
-            Text(description ?? 'No description available.'),
+            Text(description),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                LibraryService().addBook(
-                  BookModel(
-                    id: book['id'],
-                    title: title,
-                    authors: authors,
-                    thumbnail: thumbnail,
-                    description: description,
-                    status: 'want_to_read',
+
+            _alreadyAdded
+                ? ElevatedButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.check),
+                    label: const Text('Already in My Library'),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: _addToLibrary,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add to My Library'),
                   ),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Book added to your library!')),
-                );
-              },
-              child: const Text('Add to My Library'),
-            ),
+
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => WriteReviewScreen(bookId: book['id']),
+                    builder: (_) => WriteReviewScreen(bookId: widget.book['id']),
                   ),
                 );
               },
@@ -70,7 +117,7 @@ class BookDetailsScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ReviewDetailsScreen(bookId: book['id']),
+                    builder: (_) => ReviewDetailsScreen(bookId: widget.book['id']),
                   ),
                 );
               },
