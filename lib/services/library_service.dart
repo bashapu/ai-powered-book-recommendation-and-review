@@ -32,4 +32,16 @@ class LibraryService {
         .map((snapshot) =>
             snapshot.docs.map((doc) => BookModel.fromMap(doc.data())).toList());
   }
+
+  Future<void> updateBookStatus(String bookId, String newStatus) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('library')
+        .doc(bookId)
+        .update({'status': newStatus});
+  }
 }

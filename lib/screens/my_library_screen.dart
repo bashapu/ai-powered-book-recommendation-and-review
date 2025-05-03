@@ -28,12 +28,62 @@ class _MyLibraryScreenState extends State<MyLibraryScreen>
 
   Widget _buildBookCard(BookModel book) {
     return ListTile(
-      leading: book.thumbnail != null
-          ? Image.network(book.thumbnail!, width: 50)
-          : const Icon(Icons.book),
+      leading:
+          book.thumbnail != null
+              ? Image.network(book.thumbnail!, width: 50)
+              : const Icon(Icons.book),
       title: Text(book.title),
-      subtitle: Text(book.authors),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(book.authors),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text('Status: ${_statusLabel(book.status)}'),
+              const SizedBox(width: 12),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.edit, size: 18),
+                onSelected: (value) async {
+                  await _libraryService.updateBookStatus(book.id, value);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Book status updated')),
+                  );
+                },
+                itemBuilder:
+                    (context) => [
+                      const PopupMenuItem(
+                        value: 'want_to_read',
+                        child: Text('Want to Read'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'currently_reading',
+                        child: Text('Currently Reading'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'finished',
+                        child: Text('Finished'),
+                      ),
+                    ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  String _statusLabel(String key) {
+    switch (key) {
+      case 'want_to_read':
+        return 'Want to Read';
+      case 'currently_reading':
+        return 'Currently Reading';
+      case 'finished':
+        return 'Finished';
+      default:
+        return 'Unknown';
+    }
   }
 
   @override
