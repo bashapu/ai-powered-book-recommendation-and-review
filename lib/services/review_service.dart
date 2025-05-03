@@ -23,4 +23,17 @@ class ReviewService {
         .map((snapshot) =>
             snapshot.docs.map((doc) => ReviewModel.fromMap(doc.data())).toList());
   }
+
+  Future<bool> hasUserReviewed(String bookId, String userId) async {
+    final snap =
+        await _firestore
+            .collection('books')
+            .doc(bookId)
+            .collection('reviews')
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+
+    return snap.docs.isNotEmpty;
+  }
 }

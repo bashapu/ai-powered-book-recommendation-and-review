@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/review_service.dart';
-import '../models/review_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/review_model.dart';
+import '../services/review_service.dart';
 
 class WriteReviewScreen extends StatefulWidget {
   final String bookId;
@@ -16,6 +16,25 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
   final _controller = TextEditingController();
   double _rating = 3.0;
   final _auth = FirebaseAuth.instance;
+  bool _hasReviewed = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfReviewed();
+  }
+
+  Future<void> _checkIfReviewed() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final hasReviewed = await ReviewService().hasUserReviewed(widget.bookId, user.uid);
+    setState(() {
+      _hasReviewed = hasReviewed;
+      _isLoading = false;
+    });
+  }
 
   void _submit() async {
     final user = _auth.currentUser;
@@ -41,34 +60,38 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
     return Scaffold(
       appBar: AppBar(title: const Text('Write a Review')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text('Your Rating'),
-            Slider(
-              value: _rating,
-              min: 1,
-              max: 5,
-              divisions: 4,
-              label: _rating.toString(),
-              onChanged: (value) => setState(() => _rating = value),
-            ),
-            TextField(
-              controller: _controller,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Your Review',
-                border: OutlineInputBorder(),
+      body: _hasReviewed
+          ? const Center(child: Text('✅ You’ve already reviewed this book.'))
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Text('Your Rating'),
+                  Slider(
+                    value: _rating,
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    label: _rating.toString(),
+                    onChanged: (value) => setState(() => _rating = value),
+                  ),
+                  TextField(
+                    controller: _controller,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Your Review',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(onPressed: _submit, child: const Text('Submit Review')),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _submit, child: const Text('Submit Review')),
-          ],
-        ),
-      ),
     );
   }
 }
