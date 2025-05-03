@@ -1,3 +1,4 @@
+import 'package:book_app/screens/book_details_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/book_model.dart';
 import '../services/library_service.dart';
@@ -70,6 +71,23 @@ class _MyLibraryScreenState extends State<MyLibraryScreen>
           ),
         ],
       ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => BookDetailsScreen(
+                  book: {
+                    'id': book.id,
+                    'title': book.title,
+                    'authors': book.authors,
+                    'description': book.description ?? '',
+                    'thumbnail': book.thumbnail,
+                  },
+                ),
+          ),
+        );
+      },
     );
   }
 
