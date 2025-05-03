@@ -1,3 +1,4 @@
+import 'package:book_app/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -23,7 +24,7 @@ class BookBuddyApp extends StatelessWidget {
       routes: {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegistrationScreen(),
-        '/home': (_) => const HomeScreen(),
+        '/main': (_) => const MainScreen(),
       },
     );
   }

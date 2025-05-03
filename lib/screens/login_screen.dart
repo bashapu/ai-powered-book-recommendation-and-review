@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await _authService.signIn(email, password);
 
     if (user != null && mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid credentials')),
